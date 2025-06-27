@@ -1,56 +1,69 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthProvider";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    login(email);
-    navigate("/dashboard");
+
+    try {
+      const res = await fetch("http://localhost:3001/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify({ id: data.id, email: data.email, role: data.role }));
+        alert("✅ Login successful!");
+
+        // Optional: Redirect based on role
+        if (data.role === "owner") {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        alert(data.message || "❌ Invalid email or password.");
+      }
+    } catch (err) {
+      console.error("Login Error:", err);
+      alert("Something went wrong.");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-white via-slate-100 to-slate-200 px-4">
-      <div className="w-full max-w-md bg-white p-10 rounded-xl shadow-xl border border-gray-100">
-        {/* Branding / Logo */}
-       <div className="text-center mb-8">
-  <img
-    src="logomotor.jpg"
-    alt="Logo"
-    className="w-14 h-14 mx-auto mb-2 rounded-full border border-gray-300 shadow-md p-1"
-  />
-  <h2 className="text-3xl font-extrabold text-gray-800">Sign in</h2>
-  <p className="text-sm text-gray-500 mt-1">to continue to Motorbike rental</p>
-</div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-slate-100 to-indigo-100 px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+        <div className="text-center mb-6">
+          <LogIn className="w-12 h-12 mx-auto text-indigo-600 mb-2" />
+          <h2 className="text-3xl font-bold text-indigo-700">Sign In</h2>
+          <p className="text-sm text-gray-500">Welcome to Motorbike Rental</p>
+        </div>
 
-
-        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="text-sm font-medium text-gray-600 block mb-1">
-              Email
-            </label>
+            <label className="block mb-1 text-sm text-gray-600">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              className="w-full border px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-600 block mb-1">
-              Password
-            </label>
+            <label className="block mb-1 text-sm text-gray-600">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -58,7 +71,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="w-full border px-4 py-3 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
@@ -71,14 +84,14 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition duration-300 shadow-md"
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
           >
             Login
           </button>
 
-          <p className="text-center text-sm text-gray-500">
-            Don't have an account?{" "}
-            <a href="/register" className="text-blue-600 hover:underline">
+          <p className="text-center text-sm text-gray-600">
+            Don’t have an account?{" "}
+            <a href="/register" className="text-indigo-600 hover:underline">
               Register
             </a>
           </p>
