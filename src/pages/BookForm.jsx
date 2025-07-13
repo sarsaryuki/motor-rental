@@ -43,35 +43,39 @@ export default function BookForm({ bike }) {
       setError("");
     }
   }, [pickupDate, returnDate, type, bike]);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validIdFile || !selfieFile)
+    return setError("Upload both Valid ID and Selfie.");
+  if (!agree) return setError("Agree to terms and policies before booking.");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validIdFile || !selfieFile)
-      return setError("Upload both Valid ID and Selfie.");
-    if (!agree) return setError("Agree to terms and policies before booking.");
+  const token = localStorage.getItem("token");
+  if (!token) return navigate("/login");
 
-    const token = localStorage.getItem("token");
-    if (!token) return navigate("/login");
+  const formData = new FormData();
+  formData.append("bikeId", bike.id);
+  formData.append("type", type);
+  formData.append("pickupDate", pickupDate);
+  formData.append("returnDate", returnDate);
+  formData.append("totalPrice", total);
+  formData.append("validId", validIdFile);
+  formData.append("selfie", selfieFile);
 
-    const userId = JSON.parse(atob(token.split(".")[1])).id;
-    const formData = new FormData();
-    formData.append("bikeId", bike.id);
-    formData.append("userId", userId);
-    formData.append("type", type);
-    formData.append("pickupDate", pickupDate);
-    formData.append("returnDate", returnDate);
-    formData.append("totalPrice", total);
-    formData.append("validId", validIdFile);
-    formData.append("selfie", selfieFile);
+  try {
+    await axios.post("http://localhost:3001/api/bookings/upload", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    alert("Booking submitted successfully!");
+    navigate("/dashboard");
+  } catch (err) {
+    alert("Booking failed.");
+    console.error("❌ Booking error:", err);
+  }
+};
 
-    try {
-      await axios.post("http://localhost:3001/api/bookings/upload", formData);
-      alert("Booking submitted successfully!");
-      navigate("/dashboard");
-    } catch (err) {
-      alert("Booking failed.");
-    }
-  };
 
   const handleClose = () => {
     navigate("/dashboard");

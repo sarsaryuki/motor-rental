@@ -7,7 +7,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Set up multer for file upload
+// Multer storage setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, "../uploads"));
@@ -17,14 +17,10 @@ const storage = multer.diskStorage({
     cb(null, uniqueName);
   },
 });
-
 const upload = multer({ storage });
 
-// ✅ Middleware for all routes
-router.use(authMiddleware);
-
-// ✅ POST a new bike (owner only)
-router.post("/upload", upload.single("image"), async (req, res) => {
+// ✅ POST: Upload new bike (Owner only)
+router.post("/upload", authMiddleware, upload.single("image"), async (req, res) => {
   const { name, specs, pricePerHour, pricePerDay, location, barangay } = req.body;
   const ownerId = req.user.id;
 
@@ -55,8 +51,21 @@ router.post("/upload", upload.single("image"), async (req, res) => {
   }
 });
 
-// ✅ GET all available bikes only (for customer dashboard)
-router.get("/", async (req, res) => {
+// ✅ GET: Bikes only for the logged-in owner
+router.get("/my-bikes", authMiddleware, async (req, res) => {
+  const owner_id = req.user.id;
+
+  try {
+    const [rows] = await db.query("SELECT * FROM bikes WHERE owner_id = ?", [owner_id]);
+    res.json(rows);
+  } catch (error) {
+    console.error("❌ Error fetching owner's bikes:", error);
+    res.status(500).json({ error: "Failed to retrieve your bikes" });
+  }
+});
+
+// ✅ Public route (no auth) - used by customers
+router.get("/public", async (req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT b.*, u.email AS owner FROM bikes b

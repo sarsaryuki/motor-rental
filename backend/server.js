@@ -1,4 +1,3 @@
-// ✅ server.js
 require("dotenv").config();
 
 const express = require("express");
@@ -9,9 +8,8 @@ const path = require("path");
 const fs = require("fs");
 
 const db = require("./database/db");
-const bikeRoutes = require("./routes/bikeRoutes"); // 🔐 Auth protected
+const bikeRoutes = require("./routes/bikeRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
-const authMiddleware = require("./middleware/authMiddleware");
 const userRoutes = require("./routes/userRoutes");
 
 const app = express();
@@ -30,7 +28,7 @@ app.use(express.json());
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-// ✅ Serve image uploads
+// ====== Serve image uploads ======
 app.use(
   "/uploads",
   (req, res, next) => {
@@ -94,7 +92,7 @@ app.post("/api/login", async (req, res) => {
     res.json({
       id: user.id,
       token,
-      role: user.role,
+      role: user.role,  
       email: user.email,
     });
   } catch (err) {
@@ -105,8 +103,8 @@ app.post("/api/login", async (req, res) => {
 
 // ====== Routes ======
 app.use("/api/users", userRoutes);
-app.use("/api/bikes", authMiddleware, bikeRoutes); // 🔐 Token required
-app.use("/api/bookings", authMiddleware, bookingRoutes);
+app.use("/api/bikes", bikeRoutes); // ✅ No global auth here
+app.use("/api/bookings", bookingRoutes);
 
 // ====== Start Server ======
 app.listen(PORT, () => {

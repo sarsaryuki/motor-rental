@@ -33,21 +33,35 @@ export default function UserDashboard() {
   }, [darkMode]);
 
   useEffect(() => {
-    const fetchBikes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3001/api/bikes/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setBikes(res.data);
-      } catch (err) {
-        console.error("❌ Failed to fetch bikes:", err);
-      }
-    };
-    fetchBikes();
-  }, []);
+  const fetchBikes = async () => {
+    try {
+      const res = await axios.get("http://localhost:3001/api/bikes/public");
+      setBikes(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch bikes:", err);
+    }
+  };
+  fetchBikes();
+}, []);
+
+
+useEffect(() => {
+  const fetchBookingHistory = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:3001/api/bookings/history", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setHistory(res.data); // Make sure your backend returns array of booking records
+    } catch (err) {
+      console.error("❌ Failed to fetch booking history:", err);
+    }
+  };
+  fetchBookingHistory();
+}, []);
+
 
   const handleClickOutside = (event) => {
     if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -301,11 +315,11 @@ export default function UserDashboard() {
                         key={h.id}
                         className="border-b border-gray-200 dark:border-gray-700 hover:bg-indigo-50 dark:hover:bg-gray-700"
                       >
-                        <td className="px-6 py-4">{h.bikeName}</td>
-                        <td className="px-6 py-4">{h.location}</td>
-                        <td className="px-6 py-4">{h.fromDate}</td>
-                        <td className="px-6 py-4">{h.toDate}</td>
-                        <td className="px-6 py-4">{h.status}</td>
+                         <td className="px-6 py-4">{h.bikeName}</td>
+  <td className="px-6 py-4">{h.location}</td>
+  <td className="px-6 py-4">{new Date(h.pickupDate).toLocaleString()}</td>
+  <td className="px-6 py-4">{new Date(h.returnDate).toLocaleString()}</td>
+  <td className="px-6 py-4">{h.status}</td>
                       </tr>
                     ))}
                   </tbody>

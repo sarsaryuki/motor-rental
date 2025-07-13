@@ -56,7 +56,7 @@
       const fetchData = async () => {
         try {
           const [bikeRes, bookingRes] = await Promise.all([
-            axios.get("http://localhost:3001/api/bikes", getAuthHeaders()),
+            axios.get("http://localhost:3001/api/bikes/my-bikes", getAuthHeaders()),
             axios.get("http://localhost:3001/api/bookings", getAuthHeaders()),
           ]);
           setBikes(bikeRes.data);
@@ -104,7 +104,7 @@
 
         const url = editingBikeId
           ? `http://localhost:3001/api/bikes/${editingBikeId}`
-          : `http://localhost:3001/api/bikes`;
+        : `http://localhost:3001/api/bikes/upload`;
 
         const method = editingBikeId ? axios.put : axios.post;
 

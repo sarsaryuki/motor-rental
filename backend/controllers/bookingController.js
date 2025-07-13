@@ -122,3 +122,32 @@ exports.updateBookingStatus = async (req, res) => {
     res.status(500).json({ error: "Failed to update status", details: err.message });
   }
 };
+
+// 👤 Get booking history for current customer
+exports.getCustomerBookings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [rows] = await db.query(`
+      SELECT 
+        bookings.id,
+        bookings.pickupDate,
+        bookings.returnDate,
+        bookings.type,
+        bookings.totalPrice,
+        bookings.status,
+        bookings.paymentStatus,
+        bikes.name AS bikeName,
+        bikes.location
+      FROM bookings
+      LEFT JOIN bikes ON bookings.bikeId = bikes.id
+      WHERE bookings.userId = ?
+      ORDER BY bookings.id DESC
+    `, [userId]);
+
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("❌ Error fetching customer bookings:", err);
+    res.status(500).json({ error: "Failed to fetch booking history" });
+  }
+};

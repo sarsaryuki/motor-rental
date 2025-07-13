@@ -31,7 +31,12 @@ router.post("/", authMiddleware, bookingController.createBooking);
 // 📦 Get bookings (only for bikes the owner owns)
 router.get("/", authMiddleware, bookingController.getAllBookings);
 
+
+// 👤 Get bookings made by the current customer
+router.get("/history", authMiddleware, bookingController.getCustomerBookings);
+
 // ✅ Update booking status (accept/decline)
 router.patch("/:id", authMiddleware, bookingController.updateBookingStatus);
+
 
 module.exports = router;
